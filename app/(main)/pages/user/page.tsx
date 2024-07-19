@@ -5,21 +5,16 @@ import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
 import { FileUpload } from 'primereact/fileupload';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
-import React, { useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../../../demo/service/ProductService';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Project } from '@/types';
 import { UserService } from '@/service/UserService';
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Crud = () => {
+const User = () => {
     let userNull: Project.User = {
         id: 0,
         name: '',
@@ -33,24 +28,24 @@ const Crud = () => {
     const [deleteUserDialog, setDeleteUserDialog] = useState(false);
     const [deleteUsersDialog, setDeleteUsersDialog] = useState(false);
     const [user, setUser] = useState<Project.User>(userNull);
-    const [selectedUsers, setSelectedUsers] = useState(null);
+    const [selectedUsers, setSelectedUsers] = useState<Project.User[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const userService = new UserService();
+    const userService = useMemo(() => new UserService(), []);
 
 
     useEffect(() => {
-        if(users.length == 0){
-        userService.findAll().then((response) => {
-            console.log(response.data);
-            setUsers(response.data);
-        }).catch((error) => {
-            console.log(error);
-        });
-    }
-    }, [users]);
+        if (users.length == 0) {
+            userService.findAll().then((response) => {
+                console.log(response.data);
+                setUsers(response.data);
+            }).catch((error) => {
+                console.log(error);
+            });
+        }
+    }, [userService, users]);
 
 
     const openNew = () => {
@@ -80,14 +75,14 @@ const Crud = () => {
                 setUserDialog(false);
                 setUser(userNull);
                 setUsers([]);
-                toast.current.show({
+                toast.current?.show({
                     severity: 'info',
                     summary: 'Sucesso!',
                     detail: 'Usuário cadastrado com sucesso!'
                 })
             }).catch((error) => {
                 console.log(error.data.message);
-                toast.current.show({
+                toast.current?.show({
                     severity: 'error',
                     summary: 'Erro!!',
                     detail: 'Erro ao salvar!'
@@ -99,14 +94,14 @@ const Crud = () => {
                 setUserDialog(false);
                 setUser(userNull);
                 setUsers([]);
-                toast.current.show({
+                toast.current?.show({
                     severity: 'info',
                     summary: 'Sucesso!',
                     detail: 'Usuário alterado com sucesso!'
                 })
             }).catch((error) => {
                 console.log(error.data.message);
-                toast.current.show({
+                toast.current?.show({
                     severity: 'error',
                     summary: 'Erro!!',
                     detail: 'Erro ao salvar!'
@@ -127,69 +122,70 @@ const Crud = () => {
     };
 
     const deleteUser = () => {
+        if(user.id){
         userService.delete(user.id).then((response) => {
             setUser(userNull);
             setDeleteUserDialog(false);
             setUsers([]);
-            toast.current.show({
+            toast.current?.show({
                 severity: "success",
                 summary: "Sucesso!",
                 detail: "Usuário deletado com sucesso!",
                 life: 3000
             })
         }).catch((error) => {
-            toast.current.show({
+            toast.current?.show({
                 severity: "error",
                 summary: "Erro!",
                 detail: "Erro ao deletar usuário!",
                 life: 3000
             })
         })
-        
-    };
+
+    }};
 
     const exportCSV = () => {
         dt.current?.exportCSV();
     };
 
     const confirmDeleteSelected = () => {
-        setDeleteUserDialog(true);
+        setDeleteUsersDialog(true);
     };
 
     const deleteSelectedUsers = () => {
-        // let _products = (products as any)?.filter((val: any) => !(selectedProducts as any)?.includes(val));
-        // setProducts(_products);
-        // setDeleteProductsDialog(false);
-        // setSelectedProducts(null);
-        // toast.current?.show({
-        //     severity: 'success',
-        //     summary: 'Successful',
-        //     detail: 'Products Deleted',
-        //     life: 3000
-        // });
+
+        Promise.all(selectedUsers.map(async (_usuario) => {
+            if (_usuario.id) {
+                await userService.delete(_usuario.id);
+            }
+        })).then((response) => {
+            setUsers([]);
+            setSelectedUsers([]);
+            setDeleteUsersDialog(false);
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sucesso!',
+                detail: 'Usuários Deletados com Sucesso!',
+                life: 3000
+            });
+        }).catch((error) => {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Erro!',
+                detail: 'Erro ao deletar usuários!',
+                life: 3000
+            })
+        });
     };
 
-    // const onCategoryChange = (e: RadioButtonChangeEvent) => {
-    //     let _product = { ...product };
-    //     _product['category'] = e.value;
-    //     setProduct(_product);
-    // };
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
         let _user = { ...user };
         _user[`${name}`] = val;
-
         setUser(_user);
     };
 
-    // const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-    //     const val = e.value || 0;
-    //     let _product = { ...product };
-    //     _product[`${name}`] = val;
-
-    //     setProduct(_product);
-    // };
 
     const leftToolbarTemplate = () => {
         return (
@@ -247,14 +243,7 @@ const Crud = () => {
         );
     };
 
-    // const imageBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Image</span>
-    //             <img src={`/demo/images/product/${rowData.image}`} alt={rowData.image} className="shadow-2" width="100" />
-    //         </>
-    //     );
-    // };
+
 
     const actionBodyTemplate = (rowData: Project.User) => {
         return (
@@ -396,13 +385,13 @@ const Crud = () => {
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {user && (
                                 <span>
-                                    Você realmente deseja escluir o usuário <b>{user.name}</b>?
+                                    Você realmente deseja excluir o usuário <b>{user.name}</b>?
                                 </span>
                             )}
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteUsersDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteUsersDialogFooter} onHide={hideDeleteUsersDialog}>
+                    <Dialog visible={deleteUsersDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteUsersDialogFooter} onHide={hideDeleteUsersDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {user && <span>Você realmente deseja excluir os usuários selecionados?</span>}
@@ -414,4 +403,4 @@ const Crud = () => {
     );
 };
 
-export default Crud;
+export default User;
