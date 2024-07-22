@@ -23,7 +23,7 @@ const User = () => {
         email: ''
     };
 
-    const [users, setUsers] = useState<Project.User[]>([]);
+    const [users, setUsers] = useState<Project.User[] | null>(null);
     const [userDialog, setUserDialog] = useState(false);
     const [deleteUserDialog, setDeleteUserDialog] = useState(false);
     const [deleteUsersDialog, setDeleteUsersDialog] = useState(false);
@@ -37,7 +37,7 @@ const User = () => {
 
 
     useEffect(() => {
-        if (users.length == 0) {
+        if (!users) {
             userService.findAll().then((response) => {
                 console.log(response.data);
                 setUsers(response.data);
@@ -74,7 +74,7 @@ const User = () => {
             userService.create(user).then((response) => {
                 setUserDialog(false);
                 setUser(userNull);
-                setUsers([]);
+                setUsers(null);
                 toast.current?.show({
                     severity: 'info',
                     summary: 'Sucesso!',
@@ -93,7 +93,7 @@ const User = () => {
             userService.update(user).then((response) => {
                 setUserDialog(false);
                 setUser(userNull);
-                setUsers([]);
+                setUsers(null);
                 toast.current?.show({
                     severity: 'info',
                     summary: 'Sucesso!',
@@ -126,7 +126,7 @@ const User = () => {
         userService.delete(user.id).then((response) => {
             setUser(userNull);
             setDeleteUserDialog(false);
-            setUsers([]);
+            setUsers(null);
             toast.current?.show({
                 severity: "success",
                 summary: "Sucesso!",
@@ -159,7 +159,7 @@ const User = () => {
                 await userService.delete(_usuario.id);
             }
         })).then((response) => {
-            setUsers([]);
+            setUsers(null);
             setSelectedUsers([]);
             setDeleteUsersDialog(false);
             toast.current?.show({

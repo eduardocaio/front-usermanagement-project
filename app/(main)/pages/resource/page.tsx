@@ -21,7 +21,7 @@ const Resource = () => {
         key: '',
     };
 
-    const [resources, setResources] = useState<Project.Resource[]>([]);
+    const [resources, setResources] = useState<Project.Resource[] | null >(null);
     const [resourceDialog, setResourceDialog] = useState(false);
     const [deleteResourceDialog, setDeleteResourceDialog] = useState(false);
     const [deleteResourcesDialog, setDeleteResourcesDialog] = useState(false);
@@ -35,7 +35,7 @@ const Resource = () => {
 
 
     useEffect(() => {
-        if (resources.length == 0) {
+        if (!resources) {
             resourceService.findAll().then((response) => {
                 console.log(response.data);
                 setResources(response.data);
@@ -72,7 +72,7 @@ const Resource = () => {
             resourceService.create(resource).then((response) => {
                 setResourceDialog(false);
                 setResource(resourceNull);
-                setResources([]);
+                setResources(null);
                 toast.current?.show({
                     severity: 'info',
                     summary: 'Sucesso!',
@@ -91,7 +91,7 @@ const Resource = () => {
             resourceService.update(resource).then((response) => {
                 setResourceDialog(false);
                 setResource(resourceNull);
-                setResources([]);
+                setResources(null);
                 toast.current?.show({
                     severity: 'info',
                     summary: 'Sucesso!',
@@ -124,7 +124,7 @@ const Resource = () => {
         resourceService.delete(resource.id).then((response) => {
             setResource(resourceNull);
             setDeleteResourceDialog(false);
-            setResources([]);
+            setResources(null);
             toast.current?.show({
                 severity: "success",
                 summary: "Sucesso!",
@@ -157,7 +157,7 @@ const Resource = () => {
                 await resourceService.delete(_resource.id);
             }
         })).then((response) => {
-            setResources([]);
+            setResources(null);
             setSelectedResources([]);
             setDeleteResourcesDialog(false);
             toast.current?.show({
@@ -295,9 +295,9 @@ const Resource = () => {
                         rowsPerPageOptions={[5, 10, 25]}
                         className="datatable-responsive"
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} usuários"
+                        currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} recursos"
                         globalFilter={globalFilter}
-                        emptyMessage="Nenhum usuário encontrado."
+                        emptyMessage="Nenhum recurso encontrado."
                         header={header}
                         responsiveLayout="scroll"
                     >
