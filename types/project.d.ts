@@ -7,5 +7,10 @@ declare namespace Projeto{
         email: string;
     }
 
+    type Resource = {
+        id: number;
+        name: string;
+        key: string;
+    }
 
 }
