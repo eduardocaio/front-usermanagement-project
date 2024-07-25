@@ -12,4 +12,10 @@ export class LoginService{
     newRegister(user : Project.User){
         return axiosInstance.post("/auth/signup", user);
     }
+
+    login(username : String, password : String){
+        return axiosInstance.post("auth/login", {
+            username : username, password : password
+        });
+    }
 }

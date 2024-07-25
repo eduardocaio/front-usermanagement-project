@@ -50,7 +50,7 @@ const NewUserPage = () => {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Erro!!',
-                detail: 'Erro ao salvar!'
+                detail: 'Erro ao cadastrar!'
             })
 
         });

@@ -11,6 +11,10 @@ interface RootLayoutProps {
     children: React.ReactNode;
 }
 
+const checkAuth = () => {
+    
+}
+
 export default function RootLayout({ children }: RootLayoutProps) {
     return (
         <html lang="en" suppressHydrationWarning>
