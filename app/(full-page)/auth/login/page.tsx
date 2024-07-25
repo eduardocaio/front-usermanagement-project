@@ -30,6 +30,7 @@ const LoginPage = () => {
 
             localStorage.setItem('TOKEN_API_FRONTEND', response.data.token);
             router.push('/')
+            window.location.reload();
             
         }).catch((error) => {
             console.log(error);
